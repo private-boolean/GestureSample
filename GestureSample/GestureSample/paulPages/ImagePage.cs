@@ -12,7 +12,7 @@ namespace GestureSample.paulPages
 	{
 		Image mImage;
 
-		Frame imageFrame;
+		//Frame imageFrame;
 		Label tapcounter;
 		Label headerLabel = new Label
 		{
@@ -20,9 +20,11 @@ namespace GestureSample.paulPages
 		};
 
 		int timesTapped = 0;
-		MR.Gestures.AbsoluteLayout tapPointsLayout;
 
-		int boxSize = 10;
+		ContentView tapPointsContainer; // handle sizing of tapPointsLayout
+		MR.Gestures.AbsoluteLayout tapPointsLayout; // handle taps and position indicators
+
+		int tapIndicatorSize = 10;
 
 		/// <summary>
 		/// points that have been selected, in image coordinates
@@ -37,18 +39,18 @@ namespace GestureSample.paulPages
 
 		private void LayoutPage()
 		{
-			// Layout controls
+			// declare buttons
 			Button quitButton;
 
 			Button noTargetButton;
 
 			Button doneButton;
 
-			Button loadImageButton;
+			//Button loadImageButton;
 
 			Button resetLabelsButton;
 
-
+			// initialize buttons
 			quitButton = new Button
 			{
 				Text = "Quit"
@@ -73,16 +75,7 @@ namespace GestureSample.paulPages
 			};
 			resetLabelsButton.Clicked += resetLabelsButton_Clicked;
 
-			mImage = new Image
-			{
-				HeightRequest = 200,
-				BackgroundColor = Color.Yellow,
-				//Aspect = Xamarin.Forms.Aspect.AspectFit,
-				Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
-			};
-
-			AbsoluteLayout.SetLayoutFlags(mImage, AbsoluteLayoutFlags.None);
-
+			// hold and layout buttons
 			StackLayout buttonsLayout = new StackLayout
 			{
 				IsClippedToBounds = true,
@@ -96,26 +89,54 @@ namespace GestureSample.paulPages
 				Text = "TAPPED 0 TIMES"
 			};
 
+			// set up layout for handling taps
 			tapPointsLayout = new MR.Gestures.AbsoluteLayout
 			{
-				VerticalOptions = LayoutOptions.FillAndExpand,
-				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
 				BackgroundColor = Color.Teal
 			};
 
-			tapPointsLayout.Tapped += absoluteLayout_Tapped;
+			//tapPointsLayout.Tapped += absoluteLayout_Tapped;
 
-			imageFrame = new Frame
+			// hold the tapPointsLayout
+			tapPointsContainer = new ContentView
 			{
-				Padding = new Thickness(5),
-				
-				IsClippedToBounds = true,
-				VerticalOptions = LayoutOptions.CenterAndExpand,
-				Content = mImage,
-				BackgroundColor = Color.Yellow
+				BackgroundColor = Color.Green, // debugging
+				Content = tapPointsLayout,
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				HorizontalOptions = LayoutOptions.FillAndExpand
 			};
 
-			ResetLabels();
+			tapPointsContainer.SizeChanged += tapPointsContainer_SizeChanged;
+
+			mImage = new Image
+			{
+				BackgroundColor = Color.Yellow,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center
+			};
+			//mImage = new Image
+			//{
+			//	//HeightRequest = 200,
+			//	BackgroundColor = Color.Yellow,
+			//	//Aspect = Xamarin.Forms.Aspect.AspectFit,
+			//	Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
+			//};
+
+			//AbsoluteLayout.SetLayoutFlags(mImage, AbsoluteLayoutFlags.None);
+
+			//imageFrame = new Frame
+			//{
+			//	Padding = new Thickness(5),
+
+			//	IsClippedToBounds = true,
+			//	VerticalOptions = LayoutOptions.CenterAndExpand,
+			//	Content = mImage,
+			//	BackgroundColor = Color.Yellow
+			//};
+
+			//ResetLabels();
 
 			Content = new StackLayout
 			{
@@ -123,7 +144,7 @@ namespace GestureSample.paulPages
 				Children = {
 					headerLabel,
 
-					tapPointsLayout,
+					tapPointsContainer,
 
 					tapcounter,
 
@@ -170,7 +191,7 @@ namespace GestureSample.paulPages
 			Debug.WriteLine("Times tapped: " + timesTapped);
 			Debug.WriteLine("Image width: " + mImage.Width);
 			Debug.WriteLine("Image req width: " + mImage.WidthRequest);
-			
+
 			MR.Gestures.TapEventArgs tappedArgs = evt as MR.Gestures.TapEventArgs;
 			if (null != tappedArgs)
 			{
@@ -180,9 +201,48 @@ namespace GestureSample.paulPages
 			}
 		}
 
+
+		void tapPointsContainer_SizeChanged(object sender, EventArgs e)
+		{
+			this.ResetLabels();
+		}
+
 		//--------------------
 		// FUNCTIONALITY
 		//--------------------
+
+		/// <summary>
+		/// Size the image to fill its container
+		/// </summary>
+		/// <param name="imageContainer">an AbsoluteLayout that contains the image</param>
+		void SizeImage(ContentView imageContainer, Image mImage)
+		{
+			//mImage = new Image
+			//{
+			//	BackgroundColor = Color.Yellow,
+			//	//Aspect = Xamarin.Forms.Aspect.AspectFit,
+			//	Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
+			//};
+
+			mImage.Source = new UriImageSource
+			{
+				Uri = new Uri("http://developer.xamarin.com/demo/IMG_1415.JPG?width=1024")
+			};
+
+			if (imageContainer.Width > imageContainer.Height)
+			{
+				// landscape: height is limiting factor
+				mImage.HeightRequest = imageContainer.Height;
+				mImage.WidthRequest = -1;
+			}
+			else
+			{ // portrait: width is limiting factor
+				mImage.WidthRequest = imageContainer.Width;
+				mImage.HeightRequest = -1;
+			}
+
+			//AbsoluteLayout.SetLayoutBounds(mImage, new Rectangle(0, 0, mImage.WidthRequest, mImage.HeightRequest));
+		}
 
 		/// <summary>
 		/// remove all labels
@@ -191,6 +251,9 @@ namespace GestureSample.paulPages
 		{
 			selectedPoints = new List<Point>();
 			tapPointsLayout.Children.Clear();
+
+			SizeImage(tapPointsContainer, mImage);
+
 			tapPointsLayout.Children.Add(mImage, new Point(0, 0));
 			//tapPointsLayout.IsClippedToBounds = true;
 		}
@@ -205,8 +268,8 @@ namespace GestureSample.paulPages
 			BoxView indicatorBox = new BoxView
 			{
 				Color = Color.Accent,
-				WidthRequest = boxSize,
-				HeightRequest = boxSize
+				WidthRequest = tapIndicatorSize,
+				HeightRequest = tapIndicatorSize
 			};
 
 			Rectangle indicatorPosn = new Rectangle
