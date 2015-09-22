@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GestureSample.paulPages;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -214,6 +215,10 @@ namespace GestureSample.Views
 					await App.MainNavigation.PushAsync(new HorizontalScrollViewXaml { BindingContext = new ViewModels.CustomEventArgsViewModel() });
 					break;
 
+				///////////////////////////////////////////////////////////////
+				case "Paul":
+					await App.MainNavigation.PushAsync(new ImagePage());
+					break;
 			}
 		}
 	}

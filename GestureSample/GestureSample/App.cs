@@ -21,6 +21,7 @@ namespace GestureSample
 				"Views",
 				"Cells",
 				"Tests",
+				"Paul"
 			};
 
 			var mainPage = new MainPage() { Title = "Control Categories", BindingContext = samplePages };
