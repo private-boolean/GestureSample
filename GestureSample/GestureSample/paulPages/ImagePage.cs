@@ -21,6 +21,7 @@ namespace GestureSample.paulPages
 
 		int timesTapped = 0;
 		MR.Gestures.AbsoluteLayout tapPointsLayout;
+		ContentView mContentView;
 
 		int boxSize = 10;
 
@@ -84,12 +85,12 @@ namespace GestureSample.paulPages
 			AbsoluteLayout.SetLayoutFlags(mImage, AbsoluteLayoutFlags.None);
 
 			StackLayout buttonsLayout = new StackLayout
-			{
-				IsClippedToBounds = true,
-				Orientation = StackOrientation.Horizontal,
-				HorizontalOptions = LayoutOptions.CenterAndExpand,
-				Children = { quitButton, noTargetButton, resetLabelsButton, doneButton }
-			};
+{
+	IsClippedToBounds = true,
+	Orientation = StackOrientation.Horizontal,
+	HorizontalOptions = LayoutOptions.CenterAndExpand,
+	Children = { quitButton, noTargetButton, resetLabelsButton, doneButton }
+};
 
 			tapcounter = new Label
 			{
@@ -98,17 +99,25 @@ namespace GestureSample.paulPages
 
 			tapPointsLayout = new MR.Gestures.AbsoluteLayout
 			{
-				VerticalOptions = LayoutOptions.FillAndExpand,
-				HorizontalOptions = LayoutOptions.Fill,
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
 				BackgroundColor = Color.Teal
 			};
+
+			mContentView = new ContentView
+			{
+				BackgroundColor = Color.Red,
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				Content = tapPointsLayout
+			};
+			mContentView.SizeChanged += mContentView_SizeChanged;
 
 			tapPointsLayout.Tapped += absoluteLayout_Tapped;
 
 			imageFrame = new Frame
 			{
 				Padding = new Thickness(5),
-				
+
 				IsClippedToBounds = true,
 				VerticalOptions = LayoutOptions.CenterAndExpand,
 				Content = mImage,
@@ -123,7 +132,7 @@ namespace GestureSample.paulPages
 				Children = {
 					headerLabel,
 
-					tapPointsLayout,
+					mContentView,
 
 					tapcounter,
 
@@ -132,6 +141,30 @@ namespace GestureSample.paulPages
 			};
 
 			selectedPoints = new List<Point>();
+		}
+
+		void mContentView_SizeChanged(object sender, EventArgs e)
+		{
+			ContentView changedView = sender as ContentView;
+			if (null == changedView)
+			{
+				Debug.WriteLine("sender is wrong type.");
+				return;
+			}
+
+			//tapPointsLayout.Children.Clear();
+			
+
+			if (changedView.Width > changedView.Height)
+			{
+				mImage.HeightRequest = changedView.Height;
+				mImage.WidthRequest = -1;
+			}
+			else
+			{
+				mImage.HeightRequest = -1;
+				mImage.WidthRequest = changedView.Width;
+			}
 		}
 
 		//-------------------
@@ -170,7 +203,7 @@ namespace GestureSample.paulPages
 			Debug.WriteLine("Times tapped: " + timesTapped);
 			Debug.WriteLine("Image width: " + mImage.Width);
 			Debug.WriteLine("Image req width: " + mImage.WidthRequest);
-			
+
 			MR.Gestures.TapEventArgs tappedArgs = evt as MR.Gestures.TapEventArgs;
 			if (null != tappedArgs)
 			{
