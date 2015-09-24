@@ -37,8 +37,7 @@ namespace GestureSample.paulPages
 
 		async void LoadNextPageAsync()
 		{
-			await Navigation.PushModalAsync(new ImagePage());	
-			Navigation.RemovePage
+			await Navigation.PushModalAsync(new ImagePage());
 		}
 	}
 }

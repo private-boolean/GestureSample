@@ -96,6 +96,7 @@ namespace GestureSample.paulPages
 				HorizontalOptions = LayoutOptions.Fill,
 				Aspect = Xamarin.Forms.Aspect.AspectFit,
 				Source = "http://developer.xamarin.com/demo/IMG_1415.JPG?width=512"
+				//Source = "http://130.179.30.84:9998/featurefinder/image/1"
 			};
 
 			tapPointsLayout = new MR.Gestures.AbsoluteLayout
@@ -136,7 +137,7 @@ namespace GestureSample.paulPages
 		void tapPointsLayoutContainer_SizeChanged(object sender, EventArgs e)
 		{
 			ResizeImage(sender as ContentView);
-			ResetLabels();
+			//ResetLabels();
 		}
 
 		void resetLabelsButton_Clicked(object sender, EventArgs e)
