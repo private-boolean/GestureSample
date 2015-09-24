@@ -88,8 +88,9 @@ namespace GestureSample.paulPages
 				HeightRequest = 200,
 				BackgroundColor = Color.Yellow,
 				//Aspect = Xamarin.Forms.Aspect.AspectFit,
-				Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
+				//Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
 				//Source = ImageSource.FromResource("ResourceBitmapCode.Images.img.jpg")
+				Source = "http://130.179.30.84:9998/featurefinder/image/1"
 			};
 
 			AbsoluteLayout.SetLayoutFlags(mImage, AbsoluteLayoutFlags.None);
