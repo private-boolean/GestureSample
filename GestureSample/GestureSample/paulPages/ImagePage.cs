@@ -8,8 +8,17 @@ using Xamarin.Forms;
 
 namespace GestureSample.paulPages
 {
+	public enum Orientation
+	{
+		LANDSCAPE,
+		PORTRAIT
+	}
+
 	public class ImagePage : ContentPage
 	{
+		Orientation lastOrientation;
+		Orientation currentOrientation;
+
 		Image mImage;
 
 		Frame imageFrame;
@@ -80,17 +89,18 @@ namespace GestureSample.paulPages
 				BackgroundColor = Color.Yellow,
 				//Aspect = Xamarin.Forms.Aspect.AspectFit,
 				Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
+				//Source = ImageSource.FromResource("ResourceBitmapCode.Images.img.jpg")
 			};
 
 			AbsoluteLayout.SetLayoutFlags(mImage, AbsoluteLayoutFlags.None);
 
 			StackLayout buttonsLayout = new StackLayout
-{
-	IsClippedToBounds = true,
-	Orientation = StackOrientation.Horizontal,
-	HorizontalOptions = LayoutOptions.CenterAndExpand,
-	Children = { quitButton, noTargetButton, resetLabelsButton, doneButton }
-};
+			{
+				IsClippedToBounds = true,
+				Orientation = StackOrientation.Horizontal,
+				HorizontalOptions = LayoutOptions.CenterAndExpand,
+				Children = { quitButton, noTargetButton, resetLabelsButton, doneButton }
+			};
 
 			tapcounter = new Label
 			{
@@ -111,6 +121,7 @@ namespace GestureSample.paulPages
 				Content = tapPointsLayout
 			};
 			mContentView.SizeChanged += mContentView_SizeChanged;
+			mContentView.PropertyChanging += mContentView_PropertyChanging;
 
 			tapPointsLayout.Tapped += absoluteLayout_Tapped;
 
@@ -143,6 +154,39 @@ namespace GestureSample.paulPages
 			selectedPoints = new List<Point>();
 		}
 
+		void mContentView_PropertyChanging(object sender, PropertyChangingEventArgs e)
+		{
+			if (e.PropertyName.Equals("Width"))
+			{
+				ContentView changedView = sender as ContentView;
+				if (null == changedView)
+				{
+					Debug.WriteLine("sender is wrong type.");
+					return;
+				}
+
+				//mImage.HeightRequest = 20;
+				//mImage.WidthRequest = 20;
+
+				if (changedView.Width > changedView.Height)
+				{
+					Debug.WriteLine("Was landscape");
+					lastOrientation = Orientation.LANDSCAPE;
+				}
+				else
+				{
+					Debug.WriteLine("Was portait");
+					lastOrientation = Orientation.PORTRAIT;
+				}
+				if (lastOrientation == Orientation.PORTRAIT)
+				{
+					mImage.WidthRequest = 20;
+					mImage.HeightRequest = 20;
+				}
+			}
+		}
+
+		
 		void mContentView_SizeChanged(object sender, EventArgs e)
 		{
 			ContentView changedView = sender as ContentView;
@@ -152,19 +196,42 @@ namespace GestureSample.paulPages
 				return;
 			}
 
-			//tapPointsLayout.Children.Clear();
-			
+			////changedView.Content = null;
+			////tapPointsLayout.Children.Clear();
+
+			////Rectangle rect = new Rectangle(0, 0, 3, 3);
+			////mImage.SetValue(AbsoluteLayout.LayoutBoundsProperty, rect);
 
 			if (changedView.Width > changedView.Height)
 			{
-				mImage.HeightRequest = changedView.Height;
-				mImage.WidthRequest = -1;
+				Debug.WriteLine("Now Landscape");
+				currentOrientation = Orientation.LANDSCAPE;
 			}
 			else
 			{
-				mImage.HeightRequest = -1;
-				mImage.WidthRequest = changedView.Width;
+				Debug.WriteLine("Now portrait");
+				currentOrientation = Orientation.PORTRAIT;
 			}
+
+			// change image
+			//if (lastOrientation != currentOrientation)
+			//{
+			//	mImage.HeightRequest = 20;
+			//	mImage.WidthRequest = 20;
+
+			//	//changedView.ForceLayout();
+			//} else
+			//{
+				if (currentOrientation == Orientation.PORTRAIT)
+				{
+					mImage.WidthRequest = changedView.Width;
+					mImage.HeightRequest = -1;
+				} else if (currentOrientation == Orientation.LANDSCAPE)
+				{
+					mImage.HeightRequest = changedView.Height;
+					mImage.WidthRequest = -1;
+				}
+			//}
 		}
 
 		//-------------------
