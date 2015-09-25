@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace GestureSample.paulPages
@@ -19,18 +20,28 @@ namespace GestureSample.paulPages
 		Orientation lastOrientation;
 		Orientation currentOrientation;
 
-		Image mImage;
+		double _width = -1;
+		double _height = -1;
 
-		Frame imageFrame;
+		// widgets
 		Label tapcounter;
 		Label headerLabel = new Label
 		{
 			Text = "HEADER"
 		};
 
-		int timesTapped = 0;
 		MR.Gestures.AbsoluteLayout tapPointsLayout;
 		ContentView mContentView;
+		Image mImage;
+
+		Button quitButton;
+
+		Button noTargetButton;
+
+		Button doneButton;
+
+		Button resetLabelsButton;
+
 
 		int boxSize = 10;
 
@@ -41,24 +52,7 @@ namespace GestureSample.paulPages
 
 		public ImagePage()
 		{
-			LayoutPage();
-		}
-
-
-		private void LayoutPage()
-		{
 			// Layout controls
-			Button quitButton;
-
-			Button noTargetButton;
-
-			Button doneButton;
-
-			Button loadImageButton;
-
-			Button resetLabelsButton;
-
-
 			quitButton = new Button
 			{
 				Text = "Quit"
@@ -83,36 +77,53 @@ namespace GestureSample.paulPages
 			};
 			resetLabelsButton.Clicked += resetLabelsButton_Clicked;
 
-			mImage = new Image
-			{
-				HeightRequest = 200,
-				BackgroundColor = Color.Yellow,
-				//Aspect = Xamarin.Forms.Aspect.AspectFit,
-				//Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
-				//Source = ImageSource.FromResource("ResourceBitmapCode.Images.img.jpg")
-				Source = "http://130.179.30.84:9998/featurefinder/image/1"
-			};
-
-			AbsoluteLayout.SetLayoutFlags(mImage, AbsoluteLayoutFlags.None);
-
-			StackLayout buttonsLayout = new StackLayout
-			{
-				IsClippedToBounds = true,
-				Orientation = StackOrientation.Horizontal,
-				HorizontalOptions = LayoutOptions.CenterAndExpand,
-				Children = { quitButton, noTargetButton, resetLabelsButton, doneButton }
-			};
-
 			tapcounter = new Label
 			{
 				Text = "TAPPED 0 TIMES"
 			};
+
+			ImageSource mImageSource = new UriImageSource
+			{
+				Uri = new Uri("http://130.179.30.84:9998/featurefinder/image/1")
+			};
+			
+			mImage = new Image
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				BackgroundColor = Color.Yellow,
+				HeightRequest = 200,
+				Aspect = Xamarin.Forms.Aspect.AspectFit,
+				//Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
+				//Source = ImageSource.FromResource("ResourceBitmapCode.Images.img.jpg")
+				Source = mImageSource
+			};
+
+
+			AbsoluteLayout.SetLayoutFlags(mImage, AbsoluteLayoutFlags.None);
 
 			tapPointsLayout = new MR.Gestures.AbsoluteLayout
 			{
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center,
 				BackgroundColor = Color.Teal
+			};
+			tapPointsLayout.Tapped += absoluteLayout_Tapped;
+
+			ResetLabels();
+
+			LayoutPage();
+		}
+
+
+		private void LayoutPage()
+		{
+			StackLayout buttonsLayout = new StackLayout
+			{
+				IsClippedToBounds = true,
+				Orientation = StackOrientation.Horizontal,
+				HorizontalOptions = LayoutOptions.CenterAndExpand,
+				Children = { quitButton, noTargetButton, resetLabelsButton, doneButton }
 			};
 
 			mContentView = new ContentView
@@ -124,19 +135,6 @@ namespace GestureSample.paulPages
 			mContentView.SizeChanged += mContentView_SizeChanged;
 			mContentView.PropertyChanging += mContentView_PropertyChanging;
 
-			tapPointsLayout.Tapped += absoluteLayout_Tapped;
-
-			imageFrame = new Frame
-			{
-				Padding = new Thickness(5),
-
-				IsClippedToBounds = true,
-				VerticalOptions = LayoutOptions.CenterAndExpand,
-				Content = mImage,
-				BackgroundColor = Color.Yellow
-			};
-
-			ResetLabels();
 
 			Content = new StackLayout
 			{
@@ -151,44 +149,56 @@ namespace GestureSample.paulPages
 					buttonsLayout
 				}
 			};
-
-			selectedPoints = new List<Point>();
+			
 		}
 
 		void mContentView_PropertyChanging(object sender, PropertyChangingEventArgs e)
 		{
 			if (e.PropertyName.Equals("Width"))
 			{
-				ContentView changedView = sender as ContentView;
-				if (null == changedView)
-				{
-					Debug.WriteLine("sender is wrong type.");
-					return;
-				}
+				//ContentView changedView = sender as ContentView;
+				//if (null == changedView)
+				//{
+				//	Debug.WriteLine("sender is wrong type.");
+				//	return;
+				//}
 
-				//mImage.HeightRequest = 20;
-				//mImage.WidthRequest = 20;
+				////mImage.HeightRequest = 20;
+				////mImage.WidthRequest = 20;
 
-				if (changedView.Width > changedView.Height)
-				{
-					Debug.WriteLine("Was landscape");
-					lastOrientation = Orientation.LANDSCAPE;
-				}
-				else
-				{
-					Debug.WriteLine("Was portait");
-					lastOrientation = Orientation.PORTRAIT;
-				}
-				if (lastOrientation == Orientation.PORTRAIT)
-				{
-					mImage.WidthRequest = 20;
-					mImage.HeightRequest = 20;
-				}
+				//if (changedView.Width > changedView.Height)
+				//{
+				//	Debug.WriteLine("Was landscape");
+				//	lastOrientation = Orientation.LANDSCAPE;
+				//}
+				//else
+				//{
+				//	Debug.WriteLine("Was portait");
+				//	lastOrientation = Orientation.PORTRAIT;
+				//}
+				//if (lastOrientation == Orientation.PORTRAIT)
+				//{
+				//	mImage.WidthRequest = 20;
+				//	mImage.HeightRequest = 20;
+				//}
 			}
 		}
 
-		
-		void mContentView_SizeChanged(object sender, EventArgs e)
+		protected override void OnSizeAllocated(double width, double height)
+		{
+			base.OnSizeAllocated(width, height); // Important!
+
+			if (width != _width || height != _height)
+			{
+				_width = width;
+				_height = height;
+				Debug.WriteLine("Size Allocated: " + width + "x" + height);
+
+				//LayoutPage();
+			}
+		}
+
+		async void mContentView_SizeChanged(object sender, EventArgs e)
 		{
 			ContentView changedView = sender as ContentView;
 			if (null == changedView)
@@ -196,12 +206,6 @@ namespace GestureSample.paulPages
 				Debug.WriteLine("sender is wrong type.");
 				return;
 			}
-
-			////changedView.Content = null;
-			////tapPointsLayout.Children.Clear();
-
-			////Rectangle rect = new Rectangle(0, 0, 3, 3);
-			////mImage.SetValue(AbsoluteLayout.LayoutBoundsProperty, rect);
 
 			if (changedView.Width > changedView.Height)
 			{
@@ -214,25 +218,11 @@ namespace GestureSample.paulPages
 				currentOrientation = Orientation.PORTRAIT;
 			}
 
-			// change image
-			//if (lastOrientation != currentOrientation)
-			//{
-			//	mImage.HeightRequest = 20;
-			//	mImage.WidthRequest = 20;
+			tapPointsLayout.Children.Clear();
 
-			//	//changedView.ForceLayout();
-			//} else
-			//{
-				if (currentOrientation == Orientation.PORTRAIT)
-				{
-					mImage.WidthRequest = changedView.Width;
-					mImage.HeightRequest = -1;
-				} else if (currentOrientation == Orientation.LANDSCAPE)
-				{
-					mImage.HeightRequest = changedView.Height;
-					mImage.WidthRequest = -1;
-				}
-			//}
+			await Task.Delay(200);
+			ReloadLabels();
+			//AbsoluteLayout.SetLayoutBounds(mImage, new Rectangle(0, 0, changedView.Width, changedView.Height));
 		}
 
 		//-------------------
@@ -265,13 +255,6 @@ namespace GestureSample.paulPages
 
 		void absoluteLayout_Tapped(object sender, EventArgs evt)
 		{
-			timesTapped++;
-			tapcounter.Text = "times tapped: " + timesTapped;
-
-			Debug.WriteLine("Times tapped: " + timesTapped);
-			Debug.WriteLine("Image width: " + mImage.Width);
-			Debug.WriteLine("Image req width: " + mImage.WidthRequest);
-
 			MR.Gestures.TapEventArgs tappedArgs = evt as MR.Gestures.TapEventArgs;
 			if (null != tappedArgs)
 			{
@@ -294,6 +277,25 @@ namespace GestureSample.paulPages
 			tapPointsLayout.Children.Clear();
 			tapPointsLayout.Children.Add(mImage, new Point(0, 0));
 			//tapPointsLayout.IsClippedToBounds = true;
+		}
+
+		/// <summary>
+		/// re-build the tapPointsLayout
+		/// </summary>
+		void ReloadLabels()
+		{
+			tapPointsLayout.Children.Clear();
+			tapPointsLayout.Children.Add(mImage, new Point(0, 0));
+			
+			if (currentOrientation == Orientation.LANDSCAPE)
+			{
+				mImage.HeightRequest = mContentView.Height;
+				mImage.WidthRequest = -1;
+			} else if (currentOrientation == Orientation.PORTRAIT)
+			{
+				mImage.HeightRequest = -1;
+				mImage.WidthRequest = mContentView.Width;
+			}
 		}
 
 		/// <summary>
