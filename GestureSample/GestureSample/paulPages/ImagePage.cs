@@ -17,6 +17,9 @@ namespace GestureSample.paulPages
 
 	public class ImagePage : ContentPage
 	{
+		public const string hostname = "192.168.32.19";
+		//public const string hostname = "130.179.30.84";
+
 		Orientation lastOrientation;
 		Orientation currentOrientation;
 
@@ -43,7 +46,7 @@ namespace GestureSample.paulPages
 		Button resetLabelsButton;
 
 
-		int boxSize = 10;
+		int boxSize = 40;
 
 		/// <summary>
 		/// points that have been selected, in image coordinates
@@ -84,7 +87,7 @@ namespace GestureSample.paulPages
 
 			ImageSource mImageSource = new UriImageSource
 			{
-				Uri = new Uri("http://130.179.30.84:9998/featurefinder/image/1")
+				Uri = new Uri("http://" + hostname + ":9998/featurefinder/image/1")
 			};
 			
 			mImage = new Image
@@ -260,7 +263,17 @@ namespace GestureSample.paulPages
 			{
 				Point tapPoint = tappedArgs.Touches[0];
 				Debug.WriteLine("Tap point: " + tapPoint.X + ", " + tapPoint.Y);
-				AddLabelPoint(tapPoint);
+				// make sure that the tap is within the bounds of the view
+				float range = boxSize / 2.0f;
+				bool isInBounds =
+					tapPoint.X - range >= 0 &&
+					tapPoint.Y - range >= 0 &&
+					tapPoint.X + range <= tapPointsLayout.Width &&
+					tapPoint.Y + range <= tapPointsLayout.Height;
+				if (isInBounds)
+				{
+					AddLabelPoint(tapPoint);
+				}
 			}
 		}
 
@@ -312,17 +325,17 @@ namespace GestureSample.paulPages
 				HeightRequest = boxSize
 			};
 
-			Rectangle indicatorPosn = new Rectangle
+			Point indicatorPosn = new Point
 			{
-				X = tapPoint.X,
-				Y = tapPoint.Y
+				X = tapPoint.X - (double)boxSize / 2.0,
+				Y = tapPoint.Y - (double)boxSize / 2.0
 			};
 
 			Point imagePoint = TransformToImageCoordinates(tapPoint);
 
 			selectedPoints.Add(imagePoint);
 
-			tapPointsLayout.Children.Add(indicatorBox, tapPoint);
+			tapPointsLayout.Children.Add(indicatorBox, indicatorPosn);
 		}
 
 		/// <summary>
