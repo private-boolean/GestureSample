@@ -1,5 +1,4 @@
-﻿using GestureSample.Backend;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,23 +9,44 @@ using Xamarin.Forms;
 
 namespace GestureSample.paulPages
 {
+	public enum Orientation
+	{
+		LANDSCAPE,
+		PORTRAIT
+	}
+
 	public class ImagePage : ContentPage
 	{
-		Image mImage;
+		public const string hostname = "192.168.32.19";
+		//public const string hostname = "130.179.30.84";
 
-		//BoxView mBox;
+		Orientation lastOrientation;
+		Orientation currentOrientation;
 
-		Frame imageFrame;
+		double _width = -1;
+		double _height = -1;
+
+		// widgets
 		Label tapcounter;
 		Label headerLabel = new Label
 		{
 			Text = "HEADER"
 		};
 
-		MR.Gestures.AbsoluteLayout tapPointsLayout; // hold tap indicators and image
-		ContentView tapPointsLayoutContainer; // hold tapPointsLayout and size it correctly
+		MR.Gestures.AbsoluteLayout tapPointsLayout;
+		ContentView mContentView;
+		Image mImage;
 
-		int tapIndicatorSize = 10;
+		Button quitButton;
+
+		Button noTargetButton;
+
+		Button doneButton;
+
+		Button resetLabelsButton;
+
+
+		int boxSize = 40;
 
 		/// <summary>
 		/// points that have been selected, in image coordinates
@@ -35,22 +55,7 @@ namespace GestureSample.paulPages
 
 		public ImagePage()
 		{
-			LayoutPage();
-		}
-
-
-		private void LayoutPage()
-		{
-			// declare buttons
-			Button quitButton;
-
-			Button noTargetButton;
-
-			Button doneButton;
-
-			Button resetLabelsButton;
-
-			// initialize buttons
+			// Layout controls
 			quitButton = new Button
 			{
 				Text = "Quit"
@@ -75,6 +80,47 @@ namespace GestureSample.paulPages
 			};
 			resetLabelsButton.Clicked += resetLabelsButton_Clicked;
 
+			tapcounter = new Label
+			{
+				Text = "TAPPED 0 TIMES"
+			};
+
+			ImageSource mImageSource = new UriImageSource
+			{
+				Uri = new Uri("http://" + hostname + ":9998/featurefinder/image/1")
+			};
+			
+			mImage = new Image
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				BackgroundColor = Color.Yellow,
+				HeightRequest = 200,
+				Aspect = Xamarin.Forms.Aspect.AspectFit,
+				//Source = "http://developer.xamarin.com/demo/IMG_1415.JPG"
+				//Source = ImageSource.FromResource("ResourceBitmapCode.Images.img.jpg")
+				Source = mImageSource
+			};
+
+
+			AbsoluteLayout.SetLayoutFlags(mImage, AbsoluteLayoutFlags.None);
+
+			tapPointsLayout = new MR.Gestures.AbsoluteLayout
+			{
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
+				BackgroundColor = Color.Teal
+			};
+			tapPointsLayout.Tapped += absoluteLayout_Tapped;
+
+			ResetLabels();
+
+			LayoutPage();
+		}
+
+
+		private void LayoutPage()
+		{
 			StackLayout buttonsLayout = new StackLayout
 			{
 				IsClippedToBounds = true,
@@ -83,38 +129,15 @@ namespace GestureSample.paulPages
 				Children = { quitButton, noTargetButton, resetLabelsButton, doneButton }
 			};
 
-			tapcounter = new Label
+			mContentView = new ContentView
 			{
-				Text = "TAPPED 0 TIMES"
-			};
-
-			// image to display
-			mImage = new Image
-			{
-				BackgroundColor = Color.Yellow,
-				VerticalOptions = LayoutOptions.Fill,
-				HorizontalOptions = LayoutOptions.Fill,
-				Aspect = Xamarin.Forms.Aspect.AspectFit,
-				Source = "http://developer.xamarin.com/demo/IMG_1415.JPG?width=512"
-				//Source = "http://130.179.30.84:9998/featurefinder/image/1"
-			};
-
-			tapPointsLayout = new MR.Gestures.AbsoluteLayout
-			{
-				VerticalOptions = LayoutOptions.Center,
-				HorizontalOptions = LayoutOptions.Center,
-				BackgroundColor = Color.Teal
-			};
-			tapPointsLayout.Children.Add(mImage);
-			tapPointsLayout.Tapped += absoluteLayout_Tapped;
-
-			tapPointsLayoutContainer = new ContentView
-			{
+				BackgroundColor = Color.Red,
 				VerticalOptions = LayoutOptions.FillAndExpand,
-				BackgroundColor = Color.Fuchsia,
 				Content = tapPointsLayout
 			};
-			tapPointsLayoutContainer.SizeChanged += tapPointsLayoutContainer_SizeChanged;
+			mContentView.SizeChanged += mContentView_SizeChanged;
+			mContentView.PropertyChanging += mContentView_PropertyChanging;
+
 
 			Content = new StackLayout
 			{
@@ -122,24 +145,92 @@ namespace GestureSample.paulPages
 				Children = {
 					headerLabel,
 
-					tapPointsLayoutContainer,
+					mContentView,
 
 					tapcounter,
 
 					buttonsLayout
 				}
 			};
+			
+		}
+
+		void mContentView_PropertyChanging(object sender, PropertyChangingEventArgs e)
+		{
+			if (e.PropertyName.Equals("Width"))
+			{
+				//ContentView changedView = sender as ContentView;
+				//if (null == changedView)
+				//{
+				//	Debug.WriteLine("sender is wrong type.");
+				//	return;
+				//}
+
+				////mImage.HeightRequest = 20;
+				////mImage.WidthRequest = 20;
+
+				//if (changedView.Width > changedView.Height)
+				//{
+				//	Debug.WriteLine("Was landscape");
+				//	lastOrientation = Orientation.LANDSCAPE;
+				//}
+				//else
+				//{
+				//	Debug.WriteLine("Was portait");
+				//	lastOrientation = Orientation.PORTRAIT;
+				//}
+				//if (lastOrientation == Orientation.PORTRAIT)
+				//{
+				//	mImage.WidthRequest = 20;
+				//	mImage.HeightRequest = 20;
+				//}
+			}
+		}
+
+		protected override void OnSizeAllocated(double width, double height)
+		{
+			base.OnSizeAllocated(width, height); // Important!
+
+			if (width != _width || height != _height)
+			{
+				_width = width;
+				_height = height;
+				Debug.WriteLine("Size Allocated: " + width + "x" + height);
+
+				//LayoutPage();
+			}
+		}
+
+		async void mContentView_SizeChanged(object sender, EventArgs e)
+		{
+			ContentView changedView = sender as ContentView;
+			if (null == changedView)
+			{
+				Debug.WriteLine("sender is wrong type.");
+				return;
+			}
+
+			if (changedView.Width > changedView.Height)
+			{
+				Debug.WriteLine("Now Landscape");
+				currentOrientation = Orientation.LANDSCAPE;
+			}
+			else
+			{
+				Debug.WriteLine("Now portrait");
+				currentOrientation = Orientation.PORTRAIT;
+			}
+
+			tapPointsLayout.Children.Clear();
+
+			await Task.Delay(200);
+			ReloadLabels();
+			//AbsoluteLayout.SetLayoutBounds(mImage, new Rectangle(0, 0, changedView.Width, changedView.Height));
 		}
 
 		//-------------------
 		// UI CALLBACKS
 		//-------------------
-		void tapPointsLayoutContainer_SizeChanged(object sender, EventArgs e)
-		{
-			ResizeImage(sender as ContentView);
-			//ResetLabels();
-		}
-
 		void resetLabelsButton_Clicked(object sender, EventArgs e)
 		{
 			ResetLabels();
@@ -167,60 +258,28 @@ namespace GestureSample.paulPages
 
 		void absoluteLayout_Tapped(object sender, EventArgs evt)
 		{
-			tapcounter.Text = "times tapped: " + selectedPoints.Count;
-
-			VisualElement senderView = sender as VisualElement;
-			if (senderView != null)
+			MR.Gestures.TapEventArgs tappedArgs = evt as MR.Gestures.TapEventArgs;
+			if (null != tappedArgs)
 			{
-				double viewWidth = senderView.Width;
-				double viewHeight = senderView.Height;
-
-				MR.Gestures.TapEventArgs tappedArgs = evt as MR.Gestures.TapEventArgs;
-				if (null != tappedArgs)
+				Point tapPoint = tappedArgs.Touches[0];
+				Debug.WriteLine("Tap point: " + tapPoint.X + ", " + tapPoint.Y);
+				// make sure that the tap is within the bounds of the view
+				float range = boxSize / 2.0f;
+				bool isInBounds =
+					tapPoint.X - range >= 0 &&
+					tapPoint.Y - range >= 0 &&
+					tapPoint.X + range <= tapPointsLayout.Width &&
+					tapPoint.Y + range <= tapPointsLayout.Height;
+				if (isInBounds)
 				{
-
-					Point tapPoint = tappedArgs.Touches[0];
-					tapPoint.X = tapPoint.X / viewWidth;
-					tapPoint.Y = tapPoint.Y / viewHeight;
-
-					Debug.WriteLine("Tap point: " + tapPoint.X + ", " + tapPoint.Y);
 					AddLabelPoint(tapPoint);
-				} else
-				{
-					Debug.WriteLine("tappedargs is wrong type");
 				}
 			}
-			else
-				Debug.WriteLine("SenderView is wrong type.");
 		}
 
 		//--------------------
 		// FUNCTIONALITY
 		//--------------------
-
-		void ResizeImage(ContentView mContentView)
-		{
-			double width = -1.0;
-			double height = -1.0;
-
-			if (mContentView.Width > mContentView.Height)
-			{
-				// landscape: height is limiting factor
-				//mImage.HeightRequest = mContentView.Height;
-				//mImage.WidthRequest = -1;
-				height = mContentView.Height;
-				Debug.WriteLine("Landscape");
-			}
-			else
-			{
-				// portrait: width is limiting factor
-				//mImage.WidthRequest = mContentView.Width;
-				//mImage.HeightRequest = -1;
-				width = mContentView.Width;
-				Debug.WriteLine("Portrait");
-			}
-			AbsoluteLayout.SetLayoutBounds(mImage, new Rectangle(0, 0, width, height));
-		}
 
 		/// <summary>
 		/// remove all labels
@@ -229,11 +288,29 @@ namespace GestureSample.paulPages
 		{
 			selectedPoints = new List<Point>();
 			tapPointsLayout.Children.Clear();
-
 			tapPointsLayout.Children.Add(mImage, new Point(0, 0));
 			//tapPointsLayout.IsClippedToBounds = true;
 
 			tapcounter.Text = "times tapped: " + selectedPoints.Count;
+		}
+
+		/// <summary>
+		/// re-build the tapPointsLayout
+		/// </summary>
+		void ReloadLabels()
+		{
+			tapPointsLayout.Children.Clear();
+			tapPointsLayout.Children.Add(mImage, new Point(0, 0));
+			
+			if (currentOrientation == Orientation.LANDSCAPE)
+			{
+				mImage.HeightRequest = mContentView.Height;
+				mImage.WidthRequest = -1;
+			} else if (currentOrientation == Orientation.PORTRAIT)
+			{
+				mImage.HeightRequest = -1;
+				mImage.WidthRequest = mContentView.Width;
+			}
 		}
 
 		/// <summary>
@@ -246,23 +323,21 @@ namespace GestureSample.paulPages
 			BoxView indicatorBox = new BoxView
 			{
 				Color = Color.Accent,
-				WidthRequest = tapIndicatorSize,
-				HeightRequest = tapIndicatorSize
+				WidthRequest = boxSize,
+				HeightRequest = boxSize
 			};
 
-			Rectangle indicatorPosn = new Rectangle
+			Point indicatorPosn = new Point
 			{
-				X = tapPoint.X,
-				Y = tapPoint.Y
+				X = tapPoint.X - (double)boxSize / 2.0,
+				Y = tapPoint.Y - (double)boxSize / 2.0
 			};
 
 			Point imagePoint = TransformToImageCoordinates(tapPoint);
 
 			selectedPoints.Add(imagePoint);
 
-			MR.Gestures.AbsoluteLayout.SetLayoutFlags(indicatorBox, (AbsoluteLayoutFlags.XProportional | AbsoluteLayoutFlags.YProportional));
-
-			tapPointsLayout.Children.Add(indicatorBox, tapPoint);
+			tapPointsLayout.Children.Add(indicatorBox, indicatorPosn);
 		}
 
 		/// <summary>
@@ -305,7 +380,7 @@ namespace GestureSample.paulPages
 
 			ServerConnection connection = new ServerConnection();
 			connection.SendDataAsync(selectedPoints);
-			
+			LoadImage();
 		}
 
 		/// <summary>
