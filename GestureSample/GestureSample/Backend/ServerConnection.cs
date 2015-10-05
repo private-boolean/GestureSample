@@ -18,7 +18,10 @@ namespace GestureSample.Backend
 
 		private HttpClient client;
 
-		private const string URL_ROOT = "http://posttestserver.com/post.php?dir=pauliscool";
+
+		public const string hostname = "192.168.32.19";
+		//public const string hostname = "130.179.30.84";
+		//private const string URL_ROOT = "http://posttestserver.com/post.php?dir=pauliscool";
 
 		public ServerConnection()
 		{

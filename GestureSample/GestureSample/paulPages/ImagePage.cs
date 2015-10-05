@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GestureSample.Backend;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,8 +18,6 @@ namespace GestureSample.paulPages
 
 	public class ImagePage : ContentPage
 	{
-		public const string hostname = "192.168.32.19";
-		//public const string hostname = "130.179.30.84";
 
 		Orientation lastOrientation;
 		Orientation currentOrientation;

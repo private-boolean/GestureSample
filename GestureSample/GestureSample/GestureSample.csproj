@@ -38,12 +38,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
+    <Compile Include="Backend\Data\Label.cs" />
     <Compile Include="Backend\ServerConnection.cs" />
     <Compile Include="paulPages\ImagePage.cs" />
     <Compile Include="paulPages\InfoPage.cs" />
     <Compile Include="paulPages\LoginPage.cs" />
     <Compile Include="paulPages\NewImagePage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\AllCellsViewModel.cs" />
     <Compile Include="ViewModels\CustomEventArgsViewModel.cs" />
     <Compile Include="ViewModels\ListOfObjectsViewModel.cs" />
@@ -179,6 +185,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Views\AbsoluteLayoutXaml.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -317,9 +327,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Images\img.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <Content Include="Views\FormsGallery\CopiedFrom.txt" />
   </ItemGroup>
   <ItemGroup>
