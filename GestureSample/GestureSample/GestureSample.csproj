@@ -38,7 +38,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="App.cs" />
-    <Compile Include="Backend\Data\Label.cs" />
+    <Compile Include="Backend\Data\FFLabel.cs" />
     <Compile Include="Backend\ServerConnection.cs" />
     <Compile Include="paulPages\ImagePage.cs" />
     <Compile Include="paulPages\InfoPage.cs" />

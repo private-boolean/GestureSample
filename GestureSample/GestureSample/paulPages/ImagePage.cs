@@ -86,7 +86,7 @@ namespace GestureSample.paulPages
 
 			ImageSource mImageSource = new UriImageSource
 			{
-				Uri = new Uri("http://" + hostname + ":9998/featurefinder/image/1")
+				Uri = new Uri(ServerConnection.imageResource + "1")
 			};
 			
 			mImage = new Image
@@ -300,16 +300,36 @@ namespace GestureSample.paulPages
 		{
 			tapPointsLayout.Children.Clear();
 			tapPointsLayout.Children.Add(mImage, new Point(0, 0));
-			
+
+			ImageDimensions mImageDimensions = GetImageDimensions(mImage.Source);
+
+
+			double widthRequest = -1.0, heightRequest = -1.0;
 			if (currentOrientation == Orientation.LANDSCAPE)
 			{
-				mImage.HeightRequest = mContentView.Height;
-				mImage.WidthRequest = -1;
+				heightRequest = mContentView.Height;
+				widthRequest = mContentView.Height * mImageDimensions.aspectRatio;
 			} else if (currentOrientation == Orientation.PORTRAIT)
 			{
-				mImage.HeightRequest = -1;
-				mImage.WidthRequest = mContentView.Width;
+				heightRequest = mContentView.Width / mImageDimensions.aspectRatio;
+				widthRequest = mContentView.Width;
 			}
+
+			// make sure it will fit (what if image aspect ratio is weird???)
+			if (heightRequest > mContentView.Height)
+			{
+				heightRequest = mContentView.Height;
+				widthRequest = mContentView.Height * mImageDimensions.aspectRatio;
+			}
+			if (widthRequest > mContentView.Width)
+			{
+				heightRequest = mContentView.Width / mImageDimensions.aspectRatio;
+				widthRequest = mContentView.Width;
+			}
+
+
+			mImage.HeightRequest = heightRequest;
+			mImage.WidthRequest = widthRequest;
 		}
 
 		/// <summary>
@@ -391,6 +411,30 @@ namespace GestureSample.paulPages
 		private Point TransformToImageCoordinates(Point tapPoint)
 		{
 			return new Point(tapPoint.X, tapPoint.Y);
+		}
+
+		public class ImageDimensions
+		{
+			public readonly int widthPixels = -1;
+			public readonly int heightPixels = -1;
+
+			// width / height
+			public readonly double aspectRatio;
+
+			// expand as needed; colour space, etc.
+
+			public ImageDimensions(int widthPixels = -1, int heightPixels = -1)
+			{
+				this.widthPixels = widthPixels;
+				this.heightPixels = heightPixels;
+				this.aspectRatio = (double)widthPixels / (double)heightPixels;
+			}
+		}
+
+		private static ImageDimensions GetImageDimensions(ImageSource mImageSource)
+		{
+			// for now just assume 455x256, but in future do platform-specific stuff
+			return new ImageDimensions(455, 256);
 		}
 	}
 }
