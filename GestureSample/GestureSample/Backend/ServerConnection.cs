@@ -1,5 +1,4 @@
 ﻿using GestureSample.Backend.Data;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,8 +21,8 @@ namespace GestureSample.Backend
 		private HttpClient client;
 
 
-		public const string hostAddress = "http://192.168.32.21";
-		//public const string hostname = "http://130.179.30.84";
+		//public const string hostAddress = "http://192.168.32.21";
+		public const string hostAddress = "http://130.179.30.84";
 		//private const string URL_ROOT = "http://posttestserver.com/post.php?dir=pauliscool";
 
 		public const string hostname = hostAddress + ":9998/featurefinder";

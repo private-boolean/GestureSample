@@ -88,7 +88,7 @@ namespace GestureSample.paulPages
 			{
 				Uri = new Uri(ServerConnection.imageResource + "1")
 			};
-			
+
 			mImage = new Image
 			{
 				HorizontalOptions = LayoutOptions.Center,
@@ -151,7 +151,7 @@ namespace GestureSample.paulPages
 					buttonsLayout
 				}
 			};
-			
+
 		}
 
 		void mContentView_PropertyChanging(object sender, PropertyChangingEventArgs e)
@@ -260,18 +260,24 @@ namespace GestureSample.paulPages
 			MR.Gestures.TapEventArgs tappedArgs = evt as MR.Gestures.TapEventArgs;
 			if (null != tappedArgs)
 			{
-				Point tapPoint = tappedArgs.Touches[0];
-				Debug.WriteLine("Tap point: " + tapPoint.X + ", " + tapPoint.Y);
+				Point tapPointAbsolute = tappedArgs.Touches[0];
 				// make sure that the tap is within the bounds of the view
 				float range = boxSize / 2.0f;
 				bool isInBounds =
-					tapPoint.X - range >= 0 &&
-					tapPoint.Y - range >= 0 &&
-					tapPoint.X + range <= tapPointsLayout.Width &&
-					tapPoint.Y + range <= tapPointsLayout.Height;
+					tapPointAbsolute.X - range >= 0 &&
+					tapPointAbsolute.Y - range >= 0 &&
+					tapPointAbsolute.X + range <= tapPointsLayout.Width &&
+					tapPointAbsolute.Y + range <= tapPointsLayout.Height;
+
+				Point tapPointProportional = new Point(
+					tapPointAbsolute.X / tapPointsLayout.Width,
+					tapPointAbsolute.Y / tapPointsLayout.Height);
+
+
+				Debug.WriteLine("Tap point: " + tapPointProportional.X + ", " + tapPointProportional.Y);
 				if (isInBounds)
 				{
-					AddLabelPoint(tapPoint);
+					AddLabelPoint(tapPointProportional);
 				}
 			}
 		}
@@ -309,7 +315,8 @@ namespace GestureSample.paulPages
 			{
 				heightRequest = mContentView.Height;
 				widthRequest = mContentView.Height * mImageDimensions.aspectRatio;
-			} else if (currentOrientation == Orientation.PORTRAIT)
+			}
+			else if (currentOrientation == Orientation.PORTRAIT)
 			{
 				heightRequest = mContentView.Width / mImageDimensions.aspectRatio;
 				widthRequest = mContentView.Width;
@@ -335,7 +342,7 @@ namespace GestureSample.paulPages
 		/// <summary>
 		/// transform a tapped point to image coordinates, and store the point.
 		/// </summary>
-		/// <param name="tapPoint"></param>
+		/// <param name="tapPoint">unit coordinates of tap point within tapPointsLayout (i.e. the range [0.0, 1.0])</param>
 		void AddLabelPoint(Point tapPoint)
 		{
 			// draw a boxview on the point that got tapped
@@ -348,8 +355,8 @@ namespace GestureSample.paulPages
 
 			Point indicatorPosn = new Point
 			{
-				X = tapPoint.X - (double)boxSize / 2.0,
-				Y = tapPoint.Y - (double)boxSize / 2.0
+				X = tapPointsLayout.Width * tapPoint.X - (double)boxSize / 2.0,
+				Y = tapPointsLayout.Height * tapPoint.Y - (double)boxSize / 2.0
 			};
 
 			Point imagePoint = TransformToImageCoordinates(tapPoint);
@@ -357,6 +364,7 @@ namespace GestureSample.paulPages
 			selectedPoints.Add(imagePoint);
 
 			tapPointsLayout.Children.Add(indicatorBox, indicatorPosn);
+			Debug.WriteLine("Store point: " + imagePoint.X + ", " + imagePoint.Y);
 		}
 
 		/// <summary>
@@ -410,7 +418,8 @@ namespace GestureSample.paulPages
 		/// <returns>the corresponding point in image-space coordinates</returns>
 		private Point TransformToImageCoordinates(Point tapPoint)
 		{
-			return new Point(tapPoint.X, tapPoint.Y);
+			ImageDimensions dims = GetImageDimensions(mImage.Source);
+			return new Point(tapPoint.X * dims.widthPixels, tapPoint.Y * dims.heightPixels);
 		}
 
 		public class ImageDimensions
