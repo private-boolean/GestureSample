@@ -212,19 +212,24 @@ namespace GestureSample.paulPages
 			if (changedView.Width > changedView.Height)
 			{
 				Debug.WriteLine("Now Landscape");
+				lastOrientation = currentOrientation;
 				currentOrientation = Orientation.LANDSCAPE;
 			}
 			else
 			{
 				Debug.WriteLine("Now portrait");
+				lastOrientation = currentOrientation;
 				currentOrientation = Orientation.PORTRAIT;
 			}
 
-			tapPointsLayout.Children.Clear();
-
-			await Task.Delay(200);
-			ReloadLabels();
-			//AbsoluteLayout.SetLayoutBounds(mImage, new Rectangle(0, 0, changedView.Width, changedView.Height));
+			// only reload labels if we are switching orientation... sometimes this function gets called 
+			// when its children change their sizes too, but the device orientation stays the same.
+			if (lastOrientation != currentOrientation)
+			{
+				await Task.Delay(200);
+				ReloadLabels();
+				//AbsoluteLayout.SetLayoutBounds(mImage, new Rectangle(0, 0, changedView.Width, changedView.Height));
+			}
 		}
 
 		//-------------------
